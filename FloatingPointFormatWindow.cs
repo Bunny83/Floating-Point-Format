@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 
+
 public class FloatingPointFormatWindow : EditorWindow
 {
     [MenuItem("Tools/B83/FloatingPointFormat")]
@@ -9,14 +10,15 @@ public class FloatingPointFormatWindow : EditorWindow
         GetWindow<FloatingPointFormatWindow>();
 	}
 
+    [System.Serializable]
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit)]
     public struct FloatHelper
     {
-        [System.Runtime.InteropServices.FieldOffset(0)]
+        [System.Runtime.InteropServices.FieldOffset(0), System.NonSerialized]
         public float floatVal;
-        [System.Runtime.InteropServices.FieldOffset(0)]
+        [System.Runtime.InteropServices.FieldOffset(0), System.NonSerialized]
         public double doubleVal;
-        [System.Runtime.InteropServices.FieldOffset(0)]
+        [System.Runtime.InteropServices.FieldOffset(0), SerializeField]
         public ulong longVal;
 
         public ulong fMantissaBits
@@ -76,10 +78,18 @@ public class FloatingPointFormatWindow : EditorWindow
         public void DrawFloatGUI()
         {
             var oldCol = GUI.color;
-
+            GUILayout.BeginHorizontal();
             var tmp = (float)EditorGUILayout.DoubleField(floatVal);
             if (!float.IsNaN(tmp))
                 floatVal = tmp;
+            GUI.backgroundColor = new Color(0.8f, 1, 0.8f, 1);
+            if (GUILayout.Button("cast to double", GUILayout.Width(100)))
+                doubleVal = floatVal;
+            GUI.backgroundColor = new Color(0.8f, 0.8f, 1, 1);
+            if (GUILayout.Button("cast to long", GUILayout.Width(100)))
+                longVal = (ulong)floatVal;
+            GUI.backgroundColor = Color.white;
+            GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             GUILayout.Label("FloatValue: " + floatVal.ToString("g30"));
             GUILayout.Label("Exp: 2^" + fExponent);
@@ -179,7 +189,17 @@ public class FloatingPointFormatWindow : EditorWindow
         public void DrawDoubleGUI()
         {
             var oldCol = GUI.color;
+            GUILayout.BeginHorizontal();
             doubleVal = EditorGUILayout.DoubleField(doubleVal);
+            GUI.backgroundColor = new Color(1, 0.8f, 0.8f, 1);
+            if (GUILayout.Button("cast to float", GUILayout.Width(100)))
+                floatVal = (float)doubleVal;
+            GUI.backgroundColor = new Color(0.8f, 0.8f, 1, 1);
+            if (GUILayout.Button("cast to long", GUILayout.Width(100)))
+                longVal = (ulong)doubleVal;
+            GUI.backgroundColor = Color.white;
+            GUILayout.EndHorizontal();
+
             GUILayout.BeginHorizontal();
             GUILayout.Label("DoubleValue: " + doubleVal.ToString("g30"));
             GUILayout.Label("Exp: 2^" + dExponent);
@@ -282,7 +302,17 @@ public class FloatingPointFormatWindow : EditorWindow
         public void DrawLongGUI()
         {
             var oldCol = GUI.color;
+            GUILayout.BeginHorizontal();
             longVal = (ulong)EditorGUILayout.LongField((long)longVal);
+            GUI.backgroundColor = new Color(1, 0.8f, 0.8f, 1);
+            if (GUILayout.Button("cast to float", GUILayout.Width(100)))
+                floatVal = (long)longVal;
+            GUI.backgroundColor = new Color(0.8f, 1, 0.8f, 1);
+            if (GUILayout.Button("cast to double", GUILayout.Width(100)))
+                doubleVal = (long)longVal;
+            GUI.backgroundColor = Color.white;
+            GUILayout.EndHorizontal();
+
             GUILayout.BeginHorizontal();
             GUILayout.BeginVertical();
             GUILayout.Label("Long signed:" + (long)longVal);
@@ -328,6 +358,7 @@ public class FloatingPointFormatWindow : EditorWindow
         }
     }
 
+
     public FloatHelper val;
 
     void OnEnable()
@@ -338,14 +369,17 @@ public class FloatingPointFormatWindow : EditorWindow
 
     void OnGUI()
     {
+        GUI.backgroundColor = new Color(1,0.8f,0.8f,1);
         GUILayout.BeginVertical("", "box");
         GUILayout.Label("Float");
         val.DrawFloatGUI();
         GUILayout.EndVertical();
+        GUI.backgroundColor = new Color(0.8f, 1f, 0.8f, 1);
         GUILayout.BeginVertical("", "box");
         GUILayout.Label("Double");
         val.DrawDoubleGUI();
         GUILayout.EndVertical();
+        GUI.backgroundColor = new Color(0.8f, 0.8f, 1f, 1);
         GUILayout.BeginVertical("", "box");
         GUILayout.Label("Integer");
         val.DrawLongGUI();
